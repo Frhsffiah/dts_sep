@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class DtTheme {
-  // 🎨 Main colors (match DaieTrack UI)
+  // 🎨 Main colors
   static const Color headerBlue = Color(0xFFCFE7F3);
+  static const Color lightBlue = Color(0xFFBEE3F8);
   static const Color lightGrey = Color(0xFFE6E6E6);
 
-  // 📝 Input field decoration
+  // 📝 Input field
   static InputDecoration input(String hint) {
     return InputDecoration(
       hintText: hint,
@@ -14,21 +15,21 @@ class DtTheme {
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.black12),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.black12),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: Colors.black),
       ),
     );
   }
 
-  // 🔵 Main rounded button (Sign Up, Save, Login, etc.)
+  // 🔵 MAIN button (Login, Save, Register)
   static Widget primaryButton(
     String text,
     VoidCallback onTap, {
@@ -38,42 +39,48 @@ class DtTheme {
       onTap: onTap,
       child: Container(
         width: width,
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: headerBlue,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.black.withOpacity(.25)),
+          color: lightBlue,
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Center(
           child: Text(
             text,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 14,
+              color: Colors.black,
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ⚪ Small pill button (Review, View, Edit)
+  // 🔵 SMALL pill button (View, Review, Edit, Back)
   static Widget pillButton(String text, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
-          color: lightGrey,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withOpacity(.25)),
+          color: lightBlue,
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Text(
           text,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+            color: Colors.black,
+          ),
         ),
       ),
     );
   }
 
-  // 🧱 White card container (used in forms)
+  // 🧱 Card
   static Widget screenCard({required Widget child}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -84,10 +91,9 @@ class DtTheme {
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 10),
+              BoxShadow(color: Colors.black.withOpacity(.08), blurRadius: 10),
             ],
           ),
           child: child,
@@ -96,11 +102,11 @@ class DtTheme {
     );
   }
 
-  // ✅ Success popup (green tick)
-  static Future<void> signupSuccessDialog(
-    BuildContext context, {
-    VoidCallback? onClose,
-  }) async {
+  // ✅ SUCCESS popup (used for Edit Profile)
+  static Future<void> successDialog(
+    BuildContext context,
+    String message,
+  ) async {
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -109,44 +115,27 @@ class DtTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Stack(
-            children: [
-              // ❌ Close button
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    if (onClose != null) onClose();
-                  },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, size: 70, color: Colors.green),
+                const SizedBox(height: 14),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-
-              // ✅ Center content
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 32,
-                  horizontal: 24,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.check_circle, size: 90, color: Colors.green),
-                    SizedBox(height: 14),
-                    Text(
-                      "Sign Up\nSuccessful",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                const SizedBox(height: 18),
+                DtTheme.primaryButton("OK", () {
+                  Navigator.pop(context);
+                }),
+              ],
+            ),
           ),
         );
       },

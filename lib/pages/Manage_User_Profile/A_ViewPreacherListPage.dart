@@ -1,87 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../provider/UserProfileController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/dt_theme.dart';
 import '../../ui/common/admin_nav.dart';
-import 'A_PendingListPage.dart';
+import '../Manage_User_Registration/A_PendingListPage.dart';
 import 'A_ViewOfficerListPage.dart';
 import 'A_ViewPreacherProfilePage.dart';
+import '../Manage_User_Registration/A_HomePage.dart';
 
 class AViewPreacherListPage extends StatelessWidget {
   const AViewPreacherListPage({super.key});
 
-  void _showProfileMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text("View Preachers"),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.badge),
-            title: const Text("View Officers"),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const AViewOfficerListPage()),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final controller = UserProfileController();
+
     return Scaffold(
       appBar: const DaieHeader(),
-
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('preachers').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+      body: StreamBuilder(
+        stream: controller.watchAllPreachers(),
+        builder: (context, snap) {
+          if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final docs = snapshot.data!.docs;
-
+          final docs = snap.data!.docs;
           if (docs.isEmpty) {
             return const Center(child: Text("No registered preachers"));
           }
 
           return DtTheme.screenCard(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Center(
-                  child: Text(
-                    "Registered Preachers",
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                  ),
+                const Text(
+                  "Registered Preachers",
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                 ),
                 const SizedBox(height: 20),
 
                 ...docs.map((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-
+                  final data = doc.data();
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 14),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
-                            data['fullName'] ?? "-",
+                            data['fullName'] ?? '-',
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                         ),
@@ -90,7 +56,7 @@ class AViewPreacherListPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
-                                  AViewPreacherProfilePage(data: data),
+                                  AViewPreacherProfilePage(preacherId: doc.id),
                             ),
                           );
                         }),
@@ -104,18 +70,28 @@ class AViewPreacherListPage extends StatelessWidget {
         },
       ),
 
+      // ✅ FIXED NAVIGATION
       bottomNavigationBar: AdminNav(
-        currentIndex: 2,
+        currentIndex: 2, // profile tab
         onTap: (i) {
           if (i == 0) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const APendingListPage()),
+              MaterialPageRoute(builder: (_) => APendingListPage()),
             );
           } else if (i == 1) {
-            Navigator.popUntil(context, (r) => r.isFirst);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AHomePage(adminId: "admin"),
+              ),
+            );
           } else if (i == 2) {
-            _showProfileMenu(context); // ✅ FIX
+            // 🔁 SWITCH TO OFFICER LIST
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const AViewOfficerListPage()),
+            );
           }
         },
       ),

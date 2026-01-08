@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/registration_service.dart';
+import '../../provider/RegisterController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/dt_theme.dart';
 import '../../ui/common/admin_nav.dart';
 import 'A_ReviewRegPage.dart';
 import 'A_HomePage.dart';
-import 'A_ViewPreacherListPage.dart';
 
 class APendingListPage extends StatelessWidget {
   const APendingListPage({super.key});
@@ -16,21 +16,14 @@ class APendingListPage extends StatelessWidget {
     if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => const AHomePage(adminId: "admin_001"),
-        ),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AViewPreacherListPage()),
+        MaterialPageRoute(builder: (_) => const AHomePage(adminId: "admin")),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final reg = RegistrationService();
+    final reg = context.read<RegisterController>();
 
     return Scaffold(
       appBar: const DaieHeader(),
@@ -38,23 +31,15 @@ class APendingListPage extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Column(
           children: [
-            Row(
-              children: [
-                DtTheme.pillButton("Back", () => Navigator.pop(context)),
-                const Spacer(),
-                const Text(
-                  "Registration List",
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                const Spacer(),
-              ],
+            const Text(
+              "Registration List",
+              style: TextStyle(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 14),
-
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: reg.watchPending(),
-                builder: (context, snap) {
+                stream: reg.getPendingRequests(),
+                builder: (_, snap) {
                   if (!snap.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -69,7 +54,6 @@ class APendingListPage extends StatelessWidget {
                     separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       final doc = docs[i];
-
                       return Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(

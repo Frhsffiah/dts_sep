@@ -1,61 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../provider/UserProfileController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/dt_theme.dart';
 import '../../ui/common/admin_nav.dart';
 import 'A_ViewOfficerListPage.dart';
-import 'A_HomePage.dart';
-import 'A_PendingListPage.dart';
+import '../Manage_User_Registration/A_HomePage.dart';
 
 class AdminViewOfficerProfilePage extends StatelessWidget {
-  final Map<String, dynamic> data;
-
-  const AdminViewOfficerProfilePage({super.key, required this.data});
+  final String officerId;
+  const AdminViewOfficerProfilePage({super.key, required this.officerId});
 
   @override
   Widget build(BuildContext context) {
+    final controller = UserProfileController();
+
     return Scaffold(
       appBar: const DaieHeader(),
-      body: SingleChildScrollView(
-        child: DtTheme.screenCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Text(
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: controller.watchOfficer(officerId),
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final data = snap.data!.data();
+          if (data == null) {
+            return const Center(child: Text("Profile not found"));
+          }
+
+          return DtTheme.screenCard(
+            child: Column(
+              children: [
+                const Text(
                   "Profile Officer",
                   style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              _field("Full Name", (data['fullName'] ?? "-").toString()),
-              _field("Phone Number", (data['phoneNumber'] ?? "-").toString()),
-              _field("Email", (data['email'] ?? "-").toString()),
-              _field("Address", (data['address'] ?? "-").toString()),
+                _field("Full Name", data['fullName']),
+                _field("Phone Number", data['phoneNumber']),
+                _field("Email", data['email']),
+                _field("Address", data['address']),
+                _field("Role", "Officer"),
 
-              const SizedBox(height: 22),
-
-              Center(
-                child: DtTheme.pillButton("Back", () => Navigator.pop(context)),
-              ),
-            ],
-          ),
-        ),
+                const SizedBox(height: 20),
+                DtTheme.pillButton("Back", () => Navigator.pop(context)),
+              ],
+            ),
+          );
+        },
       ),
+
       bottomNavigationBar: AdminNav(
         currentIndex: 2,
         onTap: (i) {
-          if (i == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const APendingListPage()),
-            );
-          } else if (i == 1) {
+          if (i == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => const AHomePage(adminId: "admin_001"),
+                builder: (_) => const AHomePage(adminId: "admin"),
               ),
             );
           } else if (i == 2) {

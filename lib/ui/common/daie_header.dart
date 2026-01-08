@@ -1,5 +1,8 @@
+// lib/ui/common/daie_header.dart
 import 'package:flutter/material.dart';
-import '../../screens/login/LoginPage.dart';
+
+// ✅ FIXED: correct new LoginPage path
+import '../../pages/Manage_User_Registration/LoginPage.dart';
 
 class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
   const DaieHeader({super.key});
@@ -16,7 +19,6 @@ class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
           // 🕌 MUIP LOGO (LEFT)
           Image.asset('assets/images/muip.png', height: 26),
 
-          // ⬅️ spacer so title can be centered
           const SizedBox(width: 12),
 
           // 🟦 CENTER TITLE
@@ -41,7 +43,7 @@ class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
                 context: context,
                 builder: (_) => AlertDialog(
                   title: const Text("Logout"),
-                  content: const Text("Are you sure want to logout?"),
+                  content: const Text("Are you sure you want to logout?"),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
@@ -52,7 +54,7 @@ class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (_) => false,
+                          (route) => false,
                         );
                       },
                       child: const Text("Yes"),

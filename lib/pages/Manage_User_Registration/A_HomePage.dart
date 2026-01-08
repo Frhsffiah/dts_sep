@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_service.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/LoginController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/admin_nav.dart';
 import 'A_PendingListPage.dart';
-import 'A_ViewPreacherListPage.dart';
-import 'A_ViewOfficerListPage.dart';
+import '../Manage_User_Profile/A_ViewPreacherListPage.dart';
+import '../Manage_User_Profile/A_ViewOfficerListPage.dart';
 
 class AHomePage extends StatefulWidget {
   final String adminId;
-
   const AHomePage({super.key, required this.adminId});
 
   @override
@@ -67,7 +68,6 @@ class _AHomePageState extends State<AHomePage> {
               );
             },
           ),
-          const SizedBox(height: 10),
         ],
       ),
     );
@@ -75,7 +75,7 @@ class _AHomePageState extends State<AHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final adminName = AuthService.currentUser?['fullName'] ?? 'Admin';
+    final adminName = LoginController.currentUser?.fullName ?? 'Admin';
 
     return Scaffold(
       appBar: const DaieHeader(),
@@ -88,51 +88,53 @@ class _AHomePageState extends State<AHomePage> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 24),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left, size: 32),
-                  onPressed: () {
-                    setState(() {
-                      _imgIndex =
-                          (_imgIndex - 1 + images.length) % images.length;
-                    });
-                  },
-                ),
-                Container(
-                  width: 260,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(images[_imgIndex], fit: BoxFit.cover),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right, size: 32),
-                  onPressed: () {
-                    setState(() {
-                      _imgIndex = (_imgIndex + 1) % images.length;
-                    });
-                  },
-                ),
-              ],
-            ),
+            _imageCarousel(),
           ],
         ),
       ),
       bottomNavigationBar: AdminNav(currentIndex: _index, onTap: _onNavTap),
+    );
+  }
+
+  Widget _imageCarousel() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left, size: 32),
+          onPressed: () {
+            setState(() {
+              _imgIndex = (_imgIndex - 1 + images.length) % images.length;
+            });
+          },
+        ),
+        Container(
+          width: 260,
+          height: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.asset(images[_imgIndex], fit: BoxFit.cover),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.chevron_right, size: 32),
+          onPressed: () {
+            setState(() {
+              _imgIndex = (_imgIndex + 1) % images.length;
+            });
+          },
+        ),
+      ],
     );
   }
 }

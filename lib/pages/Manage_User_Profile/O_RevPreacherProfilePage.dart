@@ -6,28 +6,28 @@ import '../../ui/common/officer_nav.dart';
 
 class ORevPreacherProfilePage extends StatelessWidget {
   final String preacherId;
-
   const ORevPreacherProfilePage({super.key, required this.preacherId});
+
+  static const Color mainBlue = Color(0xFF7DD3FC);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const DaieHeader(),
-      body: StreamBuilder<DocumentSnapshot>(
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance
             .collection('preachers')
             .doc(preacherId)
             .snapshots(),
         builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
+          if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snap.hasData || !snap.data!.exists) {
+          final data = snap.data!.data();
+          if (data == null) {
             return const Center(child: Text("Profile not found"));
           }
-
-          final data = snap.data!.data() as Map<String, dynamic>;
 
           return Center(
             child: Container(
@@ -58,12 +58,11 @@ class ORevPreacherProfilePage extends StatelessWidget {
                   _field("Address", data['address']),
                   _field("Role", "Preacher"),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 20),
 
-                  /// ✅ BLUE BACK BUTTON (same style as Edit / Save)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7DD3FC), // 🔵 blue
+                      backgroundColor: mainBlue,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),

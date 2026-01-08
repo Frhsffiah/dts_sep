@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../provider/UserProfileController.dart';
 import '../../ui/common/daie_header.dart';
-import '../../ui/common/preacher_nav.dart';
-import 'P_EditProfilePage.dart';
-import 'P_HomePage.dart';
+import '../../ui/common/officer_nav.dart';
+import '../Manage_User_Registration/O_HomePage.dart';
+import 'O_EditProfilePage.dart';
 
-class PProfilePage extends StatelessWidget {
+class OfficerProfilePage extends StatelessWidget {
   final String userId;
+  const OfficerProfilePage({super.key, required this.userId});
 
-  const PProfilePage({super.key, required this.userId});
+  static const Color mainBlue = Color(0xFF7DD3FC);
 
   @override
   Widget build(BuildContext context) {
+    final controller = UserProfileController();
+
     return Scaffold(
       appBar: const DaieHeader(),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('preachers')
-            .doc(userId)
-            .snapshots(),
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: controller.watchOfficer(userId),
         builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
+          if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snap.hasData || !snap.data!.exists) {
+          final data = snap.data!.data();
+          if (data == null) {
             return const Center(child: Text("Profile not found"));
           }
-
-          final data = snap.data!.data() as Map<String, dynamic>;
 
           return Center(
             child: Container(
@@ -56,18 +56,22 @@ class PProfilePage extends StatelessWidget {
 
                   _field("Full Name", data['fullName']),
                   _field("Phone Number", data['phoneNumber']),
-                  _field("Email", data['email']), // ✅ ADDED
+                  _field("Email", data['email']),
                   _field("Address", data['address']),
-                  _field("Role", "Preacher"),
+                  _field("Role", "Officer"),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 20),
 
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue.shade200,
+                      backgroundColor: mainBlue,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 12,
                       ),
                     ),
                     onPressed: () {
@@ -75,19 +79,13 @@ class PProfilePage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) =>
-                              PEditProfilePage(userId: userId, existing: data),
+                              OEditProfilePage(officerId: userId, data: data),
                         ),
                       );
                     },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 10,
-                      ),
-                      child: Text(
-                        "Edit",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                    child: const Text(
+                      "Edit",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -96,13 +94,13 @@ class PProfilePage extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: PreacherNav(
+      bottomNavigationBar: OfficerNav(
         currentIndex: 2,
         onTap: (i) {
           if (i == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => PHomePage(preacherId: userId)),
+              MaterialPageRoute(builder: (_) => OHomePage(officerId: userId)),
             );
           }
         },

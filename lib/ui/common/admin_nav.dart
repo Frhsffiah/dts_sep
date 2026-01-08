@@ -13,27 +13,24 @@ class AdminNav extends StatelessWidget {
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
 
-      // 🎨 Colors
+      // ✅ ONLY CHANGE: background color
+      backgroundColor: Colors.grey.shade300,
+
+      // 🎨 KEEP ORIGINAL COLORS
       selectedItemColor: const Color(0xFF5A63F2),
       unselectedItemColor: Colors.grey,
 
-      // 👇 HIDE TEXT LABELS (THIS IS THE KEY)
+      // 👇 KEEP LABELS HIDDEN
       showSelectedLabels: false,
       showUnselectedLabels: false,
 
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.assignment),
-          label: "Registration", // required but hidden
+          label: "Registration",
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: "Home", // required but hidden
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people),
-          label: "Profiles", // required but hidden
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Profiles"),
       ],
     );
   }

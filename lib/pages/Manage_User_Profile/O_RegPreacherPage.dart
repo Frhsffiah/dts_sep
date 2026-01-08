@@ -3,16 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/officer_nav.dart';
+import '../Manage_User_Registration/O_HomePage.dart';
+import 'O_ProfilePage.dart';
 import 'O_RevPreacherProfilePage.dart';
 
-class ORegPreacherPage extends StatelessWidget {
-  const ORegPreacherPage({super.key});
+class OfficerRegPreacherPage extends StatelessWidget {
+  const OfficerRegPreacherPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const DaieHeader(),
-      body: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance.collection('preachers').snapshots(),
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
@@ -37,7 +39,7 @@ class ORegPreacherPage extends StatelessWidget {
               const SizedBox(height: 20),
 
               ...docs.map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
+                final data = doc.data();
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 14),
@@ -63,22 +65,33 @@ class ORegPreacherPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Column(
-                        children: [
-                          _blueBtn("Review", () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ORevPreacherProfilePage(preacherId: doc.id),
-                              ),
-                            );
-                          }),
-                          const SizedBox(height: 8),
-                          _blueBtn("Make Payment", () {
-                            // future feature
-                          }),
-                        ],
+
+                      // 🔵 BLUE REVIEW BUTTON
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightBlue.shade200,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 10,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ORevPreacherProfilePage(preacherId: doc.id),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Review",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -88,32 +101,26 @@ class ORegPreacherPage extends StatelessWidget {
           );
         },
       ),
+      // ONLY CHANGE: currentIndex + onTap
       bottomNavigationBar: OfficerNav(
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) Navigator.pop(context);
+          if (i == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OHomePage(officerId: "officer"),
+              ),
+            );
+          } else if (i == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OfficerProfilePage(userId: "officer"),
+              ),
+            );
+          }
         },
-      ),
-    );
-  }
-
-  Widget _blueBtn(String text, VoidCallback onTap) {
-    return SizedBox(
-      width: 120,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.lightBlue.shade200,
-          foregroundColor: Colors.black,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-        ),
-        onPressed: onTap,
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        ),
       ),
     );
   }
