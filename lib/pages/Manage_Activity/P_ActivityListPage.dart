@@ -1,20 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/activity_service.dart';
+import '../../provider/ActivityController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/preacher_nav.dart';
 
-class PreacherActivityTabs extends StatefulWidget {
-  final String preacherId; // pass "preacher_001"
-  const PreacherActivityTabs({super.key, required this.preacherId});
+import '../Manage_User_Registration/P_HomePage.dart';
+import '../Manage_User_Profile/P_ProfilePage.dart';
+
+class P_ActivityList extends StatefulWidget {
+  final String preacherId;
+  const P_ActivityList({super.key, required this.preacherId});
 
   @override
-  State<PreacherActivityTabs> createState() => _PreacherActivityTabsState();
+  State<P_ActivityList> createState() => _P_ActivityListState();
 }
 
-class _PreacherActivityTabsState extends State<PreacherActivityTabs> with SingleTickerProviderStateMixin {
+class _P_ActivityListState extends State<P_ActivityList>
+    with SingleTickerProviderStateMixin {
   late final TabController _tab;
 
   @override
@@ -31,7 +36,7 @@ class _PreacherActivityTabsState extends State<PreacherActivityTabs> with Single
 
   @override
   Widget build(BuildContext context) {
-    final svc = ActivityService();
+    final ctrl = context.read<ActivityController>();
 
     return Scaffold(
       appBar: const DaieHeader(),
@@ -52,9 +57,15 @@ class _PreacherActivityTabsState extends State<PreacherActivityTabs> with Single
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: svc.watchPreacherActivities(widget.preacherId),
+              stream: ctrl.watchPreacherActivities(widget.preacherId),
               builder: (context, snap) {
-                if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+                if (snap.hasError) {
+                  return Center(child: Text("Error: ${snap.error}"));
+                }
+                if (!snap.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
                 final docs = snap.data!.docs;
 
                 return TabBarView(
@@ -70,24 +81,47 @@ class _PreacherActivityTabsState extends State<PreacherActivityTabs> with Single
         ],
       ),
       bottomNavigationBar: PreacherNav(
-        currentIndex: 0,
-        onTap: (i) {
-          // friend will wire navigation
+        currentIndex: 0, // 👥 selected
+        onTap: (index) {
+          if (index == 0) return;
+
+          if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PHomePage(preacherId: widget.preacherId),
+              ),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PProfilePage(userId: widget.preacherId),
+              ),
+            );
+          }
         },
       ),
     );
   }
 
-  Widget _list(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, {required bool upcoming}) {
+  Widget _list(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, {
+    required bool upcoming,
+  }) {
     final now = DateTime.now();
 
     final filtered = docs.where((d) {
-      final dt = (d.data()['dateTime'] as Timestamp).toDate();
+      final raw = d.data()['dateTime'];
+      if (raw is! Timestamp) return false;
+      final dt = raw.toDate();
       return upcoming ? dt.isAfter(now) : !dt.isAfter(now);
     }).toList();
 
     if (filtered.isEmpty) {
-      return Center(child: Text(upcoming ? "No upcoming activity" : "No completed activity"));
+      return Center(
+        child: Text(upcoming ? "No upcoming activity" : "No completed activity"),
+      );
     }
 
     return ListView.separated(
@@ -96,8 +130,10 @@ class _PreacherActivityTabsState extends State<PreacherActivityTabs> with Single
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (_, i) {
         final data = filtered[i].data();
+
         final title = (data['title'] ?? '').toString();
         final place = (data['place'] ?? '').toString();
+
         final dt = (data['dateTime'] as Timestamp).toDate();
         final dateStr = DateFormat('d/M/yyyy').format(dt);
         final timeStr = DateFormat('h:mm a').format(dt);
@@ -117,11 +153,18 @@ class _PreacherActivityTabsState extends State<PreacherActivityTabs> with Single
               _row(Icons.location_on_outlined, place),
               const SizedBox(height: 4),
               _row(Icons.calendar_month_outlined, dateStr),
-              const SizedBox(height: 4),_row(Icons.access_time_rounded, timeStr),
+              const SizedBox(height: 4),
+              _row(Icons.access_time_rounded, timeStr),
               if (!upcoming) ...[
                 const SizedBox(height: 6),
-                Text("Payment Receipt", style: TextStyle(color: Colors.black.withOpacity(.35), decoration: TextDecoration.underline)),
-              ]
+                Text(
+                  "Payment Receipt",
+                  style: TextStyle(
+                    color: Colors.black.withOpacity(.35),
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
             ],
           ),
         );

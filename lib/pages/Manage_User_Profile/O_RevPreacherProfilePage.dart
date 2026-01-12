@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/officer_nav.dart';
+import '../Manage_Activity/O_ActivityListPage.dart';
 
 class ORevPreacherProfilePage extends StatelessWidget {
   final String preacherId;
@@ -72,12 +73,20 @@ class ORevPreacherProfilePage extends StatelessWidget {
                         vertical: 12,
                       ),
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => O_ActivityList(officerId: preacherId),
+                        ),
+                      );
+                    },
                     child: const Text(
-                      "Back",
+                      "Activity",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
+
                 ],
               ),
             ),

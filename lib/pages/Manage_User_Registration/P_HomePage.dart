@@ -4,6 +4,7 @@ import '../../provider/LoginController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/preacher_nav.dart';
 import '../Manage_User_Profile/P_ProfilePage.dart';
+import '../Manage_Activity/P_ActivityListPage.dart';
 
 class PHomePage extends StatefulWidget {
   final String preacherId;
@@ -20,16 +21,32 @@ class _PHomePageState extends State<PHomePage> {
   final images = ['assets/images/preacher1.png', 'assets/images/preacher2.jpg'];
 
   void _onNavTap(int i) {
+    if (i == _index) return; // ✅ do nothing if tap same icon
+
+    if (i == 0) {
+      // 👥 Activity List
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => P_ActivityList(preacherId: widget.preacherId),
+        ),
+      );
+      return;
+    }
+
     if (i == 2) {
+      // 👤 Profile
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => PProfilePage(userId: widget.preacherId),
         ),
       );
-    } else {
-      setState(() => _index = 1);
+      return;
     }
+
+    // 🏠 Home
+    setState(() => _index = 1);
   }
 
   @override
@@ -55,7 +72,6 @@ class _PHomePageState extends State<PHomePage> {
     );
   }
 
-  // 🔁 SAME carousel logic as Admin
   Widget _imageCarousel() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
