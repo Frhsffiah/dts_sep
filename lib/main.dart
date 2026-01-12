@@ -36,10 +36,10 @@ class MyApp extends StatelessWidget {
       // ==============================
 
       // Officer (CRUD)
-       home: const OfficerActivityList(officerId: "officer_001"),
+      // home: const OfficerActivityList(officerId: "officer_001"),
 
       // Preacher (View Upcoming/Completed)
-      // home: const PreacherActivityTabs(preacherId: "preacher_002"),
+       home: const PreacherActivityTabs(preacherId: "preacher_001"),
     );
   }
 }
