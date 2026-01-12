@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 class OfficerNav extends StatelessWidget {
   final int currentIndex; // 0=activity,1=home,2=profile
   final void Function(int) onTap;
-  const OfficerNav({super.key, required this.currentIndex, required this.onTap});
+  const OfficerNav({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,7 @@ class OfficerNav extends StatelessWidget {
         children: [
           _item(
             index: 0,
-            selectedIcon: Icons.calendar_month,              // ✅ like design
+            selectedIcon: Icons.calendar_month, // ✅ like design
             unselectedIcon: Icons.calendar_month_outlined,
           ),
           _item(

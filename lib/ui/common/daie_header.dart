@@ -1,52 +1,74 @@
+// lib/ui/common/daie_header.dart
 import 'package:flutter/material.dart';
 
-class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  const DaieHeader({super.key, this.title = "DaieTrack"});
+// ✅ FIXED: correct new LoginPage path
+import '../../pages/Manage_User_Registration/LoginPage.dart';
 
-  @override
-  Size get preferredSize => const Size.fromHeight(74);
+class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
+  const DaieHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: preferredSize.height,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFD6EEF9), // light blue like your UI
-          border: Border(
-            bottom: BorderSide(color: Colors.black.withOpacity(.2), width: 1),
-          ),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(6),
-            bottomRight: Radius.circular(6),
-          ),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.notifications_none, size: 30),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Center(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF1F3C88),
-                    shadows: [
-                      Shadow(offset: Offset(1, 1), blurRadius: 0, color: Colors.black38),
-                    ],
-                  ),
+    return AppBar(
+      elevation: 0,
+      backgroundColor: const Color(0xFFD6EEF9),
+      automaticallyImplyLeading: false,
+
+      title: Row(
+        children: [
+          // 🕌 MUIP LOGO (LEFT)
+          Image.asset('assets/images/muip.png', height: 26),
+
+          const SizedBox(width: 12),
+
+          // 🟦 CENTER TITLE
+          const Expanded(
+            child: Center(
+              child: Text(
+                "DaieTrack",
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: Colors.black,
                 ),
               ),
             ),
-            const SizedBox(width: 44), // to balance bell spacing
-          ],
-        ),
+          ),
+
+          // 🔴 LOGOUT BUTTON (RIGHT)
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.red),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text("Logout"),
+                  content: const Text("Are you sure you want to logout?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("No"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      },
+                      child: const Text("Yes"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(56);
 }
