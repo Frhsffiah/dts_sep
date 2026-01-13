@@ -8,8 +8,9 @@ import 'firebase_options.dart';
 import 'provider/LoginController.dart';
 import 'provider/RegisterController.dart';
 import 'provider/ActivityController.dart';
+import 'provider/PaymentController.dart';
 
-// ✅ ADD THIS
+// Services
 import 'services/user_service.dart';
 
 // Start page
@@ -17,6 +18,7 @@ import 'pages/Manage_User_Registration/LoginPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -35,14 +37,17 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LoginController()),
         ChangeNotifierProvider(create: (_) => RegisterController()),
         ChangeNotifierProvider(create: (_) => ActivityController()),
+        ChangeNotifierProvider(create: (_) => PaymentController()),
 
-        // ✅ ADD THIS LINE
+        // Services
         Provider<UserService>(create: (_) => UserService()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'DaieTrack',
-        theme: ThemeData(useMaterial3: true),
+        theme: ThemeData(
+          useMaterial3: true,
+        ),
         home: const LoginPage(),
       ),
     );

@@ -6,6 +6,7 @@ import '../../ui/common/officer_nav.dart';
 import '../Manage_User_Registration/O_HomePage.dart';
 import 'O_ProfilePage.dart';
 import 'O_RevPreacherProfilePage.dart';
+import '../Manage_Payment/O_MakePaymentPage.dart';
 
 class OfficerRegPreacherPage extends StatelessWidget {
   const OfficerRegPreacherPage({super.key});
@@ -66,32 +67,73 @@ class OfficerRegPreacherPage extends StatelessWidget {
                         ),
                       ),
 
-                      // 🔵 BLUE REVIEW BUTTON
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.lightBlue.shade200,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 10,
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ORevPreacherProfilePage(preacherId: doc.id),
+                      /// 🔵 ACTION BUTTONS
+                      Column(
+                        children: [
+                          // 🔵 REVIEW BUTTON
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightBlue.shade200,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 10,
+                              ),
                             ),
-                          );
-                        },
-                        child: const Text(
-                          "Review",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ORevPreacherProfilePage(
+                                    preacherId: doc.id,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Review",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // 🟡 MAKE PAYMENT BUTTON
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.yellow.shade600,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 10,
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => OMakePaymentPage(
+                                    preacherId: doc.id,
+                                    preacherName: data['fullName'] ?? '',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Make Payment",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -101,7 +143,8 @@ class OfficerRegPreacherPage extends StatelessWidget {
           );
         },
       ),
-      // ONLY CHANGE: currentIndex + onTap
+
+      // Bottom navigation (unchanged)
       bottomNavigationBar: OfficerNav(
         currentIndex: 0,
         onTap: (i) {
