@@ -6,16 +6,21 @@ import '../../ui/common/officer_nav.dart';
 import '../Manage_User_Registration/O_HomePage.dart';
 import 'O_ProfilePage.dart';
 import 'O_RevPreacherProfilePage.dart';
+import '../Manage_Payment/O_MakePaymentPage.dart';
 
 class OfficerRegPreacherPage extends StatelessWidget {
-  const OfficerRegPreacherPage({super.key});
+  final String officerId;
+
+  const OfficerRegPreacherPage({super.key, required this.officerId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const DaieHeader(),
+
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance.collection('preachers').snapshots(),
+
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -54,6 +59,7 @@ class OfficerRegPreacherPage extends StatelessWidget {
                       ),
                     ],
                   ),
+
                   child: Row(
                     children: [
                       Expanded(
@@ -66,32 +72,53 @@ class OfficerRegPreacherPage extends StatelessWidget {
                         ),
                       ),
 
-                      // 🔵 BLUE REVIEW BUTTON
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.lightBlue.shade200,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 10,
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ORevPreacherProfilePage(preacherId: doc.id),
+                      Column(
+                        children: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightBlue.shade200,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
-                          );
-                        },
-                        child: const Text(
-                          "Review",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ORevPreacherProfilePage(
+                                    preacherId: doc.id,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text("Review"),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.yellow.shade600,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => OMakePaymentPage(
+                                    preacherId: doc.id,
+                                    preacherName: data['fullName'] ?? '',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text("Make Payment"),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -101,7 +128,7 @@ class OfficerRegPreacherPage extends StatelessWidget {
           );
         },
       ),
-      // ONLY CHANGE: currentIndex + onTap
+
       bottomNavigationBar: OfficerNav(
         currentIndex: 0,
         onTap: (i) {
@@ -109,14 +136,14 @@ class OfficerRegPreacherPage extends StatelessWidget {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => OHomePage(officerId: "officer"),
+                builder: (_) => OHomePage(officerId: officerId),
               ),
             );
           } else if (i == 2) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (_) => OfficerProfilePage(userId: "officer"),
+                builder: (_) => OfficerProfilePage(userId: officerId),
               ),
             );
           }

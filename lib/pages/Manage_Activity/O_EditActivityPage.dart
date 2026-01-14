@@ -1,28 +1,55 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/activity_service.dart';
+import '../../provider/ActivityController.dart';
 import '../../services/user_service.dart';
 import '../../ui/common/daie_header.dart';
 
-class OfficerAddActivity extends StatefulWidget {
+class O_EditActivity extends StatefulWidget {
   final String officerId;
-  const OfficerAddActivity({super.key, required this.officerId});
+  final String activityId;
+  final Map<String, dynamic> existing;
+
+  const O_EditActivity({
+    super.key,
+    required this.officerId,
+    required this.activityId,
+    required this.existing,
+  });
 
   @override
-  State<OfficerAddActivity> createState() => _OfficerAddActivityState();
+  State<O_EditActivity> createState() => _O_EditActivityState();
 }
 
-class _OfficerAddActivityState extends State<OfficerAddActivity> {
-  final _title = TextEditingController();
-  final _place = TextEditingController();
-  final _desc = TextEditingController();
+class _O_EditActivityState extends State<O_EditActivity> {
+  late final TextEditingController _title;
+  late final TextEditingController _place;
+  late final TextEditingController _desc;
+
   DateTime? _picked;
 
   String _search = "";
   String? _preacherId;
   String? _preacherName;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _title = TextEditingController(text: (widget.existing['title'] ?? '').toString());
+    _place = TextEditingController(text: (widget.existing['place'] ?? '').toString());
+    _desc = TextEditingController(text: (widget.existing['description'] ?? '').toString());
+
+    final rawDt = widget.existing['dateTime'];
+    if (rawDt is Timestamp) {
+      _picked = rawDt.toDate();
+    }
+
+    _preacherId = (widget.existing['preacherId'] ?? '').toString();
+    _preacherName = (widget.existing['preacherName'] ?? '').toString();
+  }
 
   @override
   void dispose() {
@@ -52,7 +79,7 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("New Activity", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+              const Text("Edit Activity", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
               const SizedBox(height: 14),
 
               _field("Activity Name", _title),
@@ -67,12 +94,15 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
               _field("Description", _desc, maxLines: 2),
               const SizedBox(height: 12),
 
-              // Preacher Search + list
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Preacher", style: TextStyle(color: Colors.black.withOpacity(.7), fontWeight: FontWeight.w700)),
+                child: Text(
+                  "Preacher",
+                  style: TextStyle(color: Colors.black.withOpacity(.7), fontWeight: FontWeight.w700),
+                ),
               ),
               const SizedBox(height: 6),
+
               TextField(
                 decoration: InputDecoration(
                   hintText: "Search preacher name...",
@@ -82,6 +112,7 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
                 onChanged: (v) => setState(() => _search = v.trim().toLowerCase()),
               ),
               const SizedBox(height: 8),
+
               Container(
                 height: 140,
                 decoration: BoxDecoration(
@@ -92,8 +123,8 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
                   stream: users.watchPreachers(),
                   builder: (context, snap) {
                     if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-                    final docs = snap.data!.docs;
 
+                    final docs = snap.data!.docs;
                     final filtered = docs.where((d) {
                       final name = (d.data()['fullName'] ?? '').toString().toLowerCase();
                       return _search.isEmpty || name.contains(_search);
@@ -125,6 +156,7 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
               ),
 
               const SizedBox(height: 14),
+
               InkWell(
                 onTap: _submit,
                 child: Container(
@@ -135,7 +167,7 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: Colors.black.withOpacity(.25)),
                   ),
-                  child: const Center(child: Text("Add Activity", style: TextStyle(fontWeight: FontWeight.w800))),
+                  child: const Center(child: Text("Update", style: TextStyle(fontWeight: FontWeight.w800))),
                 ),
               ),
             ],
@@ -167,6 +199,7 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
     final text = _picked == null
         ? ""
         : "${DateFormat('d/M/yyyy').format(_picked!)}  ${DateFormat('h:mm a').format(_picked!)}";
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -213,15 +246,17 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
     if (_title.text.trim().isEmpty ||
         _place.text.trim().isEmpty ||
         _picked == null ||
-        _preacherId == null ||
-        _preacherName == null) {
-      _toast("Please fill all fields (including preacher).");
+        (_preacherId == null || _preacherId!.isEmpty) ||
+        (_preacherName == null || _preacherName!.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields.")),
+      );
       return;
     }
 
-    final svc = ActivityService();
-    await svc.addActivity(
-      officerId: widget.officerId,
+    final ctrl = context.read<ActivityController>();
+    await ctrl.updateActivity(
+      widget.activityId,
       title: _title.text,
       description: _desc.text,
       place: _place.text,
@@ -231,28 +266,26 @@ class _OfficerAddActivityState extends State<OfficerAddActivity> {
     );
 
     if (!mounted) return;
-    await _successPopup("New Activity\nAdded!!");
-    if (mounted) Navigator.pop(context);
-  }
 
-  void _toast(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  Future<void> _successPopup(String text) async {
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, size: 72, color: Colors.green),
-            const SizedBox(height: 10),
-            Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+          children: const [
+            Icon(Icons.check_circle, size: 72, color: Colors.green),
+            SizedBox(height: 10),
+            Text(
+              "Activity\nUpdated!!",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+            ),
           ],
         ),
       ),
     );
+
+    if (mounted) Navigator.pop(context);
   }
 }

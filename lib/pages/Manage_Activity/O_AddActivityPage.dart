@@ -2,54 +2,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../services/activity_service.dart';
+import 'package:provider/provider.dart';
+import '../../provider/ActivityController.dart';
 import '../../services/user_service.dart';
 import '../../ui/common/daie_header.dart';
 
-class OfficerEditActivity extends StatefulWidget {
+class O_AddActivity extends StatefulWidget {
   final String officerId;
-  final String activityId;
-  final Map<String, dynamic> existing;
-
-  const OfficerEditActivity({
-    super.key,
-    required this.officerId,
-    required this.activityId,
-    required this.existing,
-  });
+  const O_AddActivity({super.key, required this.officerId});
 
   @override
-  State<OfficerEditActivity> createState() => _OfficerEditActivityState();
+  State<O_AddActivity> createState() => _O_AddActivityState();
 }
 
-class _OfficerEditActivityState extends State<OfficerEditActivity> {
-  late final TextEditingController _title;
-  late final TextEditingController _place;
-  late final TextEditingController _desc;
+class _O_AddActivityState extends State<O_AddActivity> {
 
+  final _title = TextEditingController();
+  final _place = TextEditingController();
+  final _desc = TextEditingController();
   DateTime? _picked;
 
   String _search = "";
   String? _preacherId;
   String? _preacherName;
-
-  @override
-  void initState() {
-    super.initState();
-    _title = TextEditingController(
-      text: (widget.existing['title'] ?? '').toString(),
-    );
-    _place = TextEditingController(
-      text: (widget.existing['place'] ?? '').toString(),
-    );
-    _desc = TextEditingController(
-      text: (widget.existing['description'] ?? '').toString(),
-    );
-
-    _picked = (widget.existing['dateTime'] as Timestamp).toDate();
-    _preacherId = (widget.existing['preacherId'] ?? '').toString();
-    _preacherName = (widget.existing['preacherName'] ?? '').toString();
-  }
 
   @override
   void dispose() {
@@ -74,17 +49,12 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.black12),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 10),
-            ],
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(.05), blurRadius: 10)],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "New Activity",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-              ),
+              const Text("New Activity", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
               const SizedBox(height: 14),
 
               _field("Activity Name", _title),
@@ -99,27 +69,19 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
               _field("Description", _desc, maxLines: 2),
               const SizedBox(height: 12),
 
+              // Preacher Search + list
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  "Preacher",
-                  style: TextStyle(
-                    color: Colors.black.withOpacity(.7),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: Text("Preacher", style: TextStyle(color: Colors.black.withOpacity(.7), fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 6),
               TextField(
                 decoration: InputDecoration(
                   hintText: "Search preacher name...",
                   isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
                 ),
-                onChanged: (v) =>
-                    setState(() => _search = v.trim().toLowerCase()),
+                onChanged: (v) => setState(() => _search = v.trim().toLowerCase()),
               ),
               const SizedBox(height: 8),
               Container(
@@ -131,19 +93,15 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: users.watchPreachers(),
                   builder: (context, snap) {
-                    if (!snap.hasData)
-                      return const Center(child: CircularProgressIndicator());
+                    if (!snap.hasData) return const Center(child: CircularProgressIndicator());
                     final docs = snap.data!.docs;
 
                     final filtered = docs.where((d) {
-                      final name = (d.data()['fullName'] ?? '')
-                          .toString()
-                          .toLowerCase();
+                      final name = (d.data()['fullName'] ?? '').toString().toLowerCase();
                       return _search.isEmpty || name.contains(_search);
                     }).toList();
 
-                    if (filtered.isEmpty)
-                      return const Center(child: Text("No preacher found"));
+                    if (filtered.isEmpty) return const Center(child: Text("No preacher found"));
 
                     return ListView.builder(
                       itemCount: filtered.length,
@@ -155,19 +113,8 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
 
                         return ListTile(
                           dense: true,
-                          title: Text(
-                            name,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          trailing: selected
-                              ? const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                )
-                              : null,
+                          title: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                          trailing: selected ? const Icon(Icons.check_circle, color: Colors.green) : null,
                           onTap: () => setState(() {
                             _preacherId = d.id;
                             _preacherName = name;
@@ -190,12 +137,7 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: Colors.black.withOpacity(.25)),
                   ),
-                  child: const Center(
-                    child: Text(
-                      "Update",
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
+                  child: const Center(child: Text("Add Activity", style: TextStyle(fontWeight: FontWeight.w800))),
                 ),
               ),
             ],
@@ -209,13 +151,7 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.black.withOpacity(.7),
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text(label, style: TextStyle(color: Colors.black.withOpacity(.7), fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
         TextField(
           controller: c,
@@ -236,13 +172,7 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Date & Time",
-          style: TextStyle(
-            color: Colors.black.withOpacity(.7),
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text("Date & Time", style: TextStyle(color: Colors.black.withOpacity(.7), fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
         InkWell(
           onTap: _pickDateTime,
@@ -277,13 +207,7 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
     if (time == null) return;
 
     setState(() {
-      _picked = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        time.hour,
-        time.minute,
-      );
+      _picked = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
   }
 
@@ -291,17 +215,15 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
     if (_title.text.trim().isEmpty ||
         _place.text.trim().isEmpty ||
         _picked == null ||
-        (_preacherId == null || _preacherId!.isEmpty) ||
-        (_preacherName == null || _preacherName!.isEmpty)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Please fill all fields.")));
+        _preacherId == null ||
+        _preacherName == null) {
+      _toast("Please fill all fields (including preacher).");
       return;
     }
 
-    final svc = ActivityService();
-    await svc.updateActivity(
-      widget.activityId,
+    final ctrl = context.read<ActivityController>();
+    await ctrl.addActivity(
+      officerId: widget.officerId,
       title: _title.text,
       description: _desc.text,
       place: _place.text,
@@ -310,25 +232,30 @@ class _OfficerEditActivityState extends State<OfficerEditActivity> {
       preacherName: _preacherName!,
     );
 
+
     if (!mounted) return;
+    await _successPopup("New Activity\nAdded!!");
+    if (mounted) Navigator.pop(context);
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _successPopup(String text) async {
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.check_circle, size: 72, color: Colors.green),
-            SizedBox(height: 10),
-            Text(
-              "Activity\nUpdated!!",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-            ),
+          children: [
+            const Icon(Icons.check_circle, size: 72, color: Colors.green),
+            const SizedBox(height: 10),
+            Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
           ],
         ),
       ),
     );
-    if (mounted) Navigator.pop(context);
   }
 }

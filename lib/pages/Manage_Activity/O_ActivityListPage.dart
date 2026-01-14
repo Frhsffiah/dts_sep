@@ -2,19 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../services/activity_service.dart';
+import 'package:provider/provider.dart';
+import '../../provider/ActivityController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/officer_nav.dart';
-import 'officer_add_activity.dart';
-import 'officer_edit_activity.dart';
+import 'O_AddActivityPage.dart';
+import 'O_EditActivityPage.dart';
 
-class OfficerActivityList extends StatelessWidget {
-  final String officerId; // for now pass "officer_001"
-  const OfficerActivityList({super.key, required this.officerId});
+class O_ActivityList extends StatelessWidget {
+  final String officerId;
+  const O_ActivityList({super.key, required this.officerId});
 
   @override
   Widget build(BuildContext context) {
-    final svc = ActivityService();
+    final ctrl = context.read<ActivityController>();
 
     return Scaffold(
       appBar: const DaieHeader(),
@@ -32,7 +33,7 @@ class OfficerActivityList extends StatelessWidget {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => OfficerAddActivity(officerId: officerId),
+                        builder: (_) => O_AddActivity(officerId: officerId),
                       ),
                     );
                   },
@@ -42,7 +43,7 @@ class OfficerActivityList extends StatelessWidget {
             const SizedBox(height: 10),
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: svc.watchOfficerActivities(officerId),
+                stream: ctrl.watchOfficerActivities(officerId),
                 builder: (context, snap) {
                   if (snap.hasError) {return Center(child: Text("Error: ${snap.error}"));}
                   if (!snap.hasData) return const Center(child: CircularProgressIndicator());
@@ -95,11 +96,12 @@ class OfficerActivityList extends StatelessWidget {
                                   await Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => OfficerEditActivity(
+                                      builder: (_) => O_EditActivity(
                                         officerId: officerId,
                                         activityId: d.id,
                                         existing: data,
                                       ),
+
                                     ),
                                   );
                                 }),
@@ -170,7 +172,7 @@ class OfficerActivityList extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, String id) async {
-    final svc = ActivityService();
+    final ctrl = context.read<ActivityController>();
     final ok = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -192,7 +194,7 @@ class OfficerActivityList extends StatelessWidget {
     );
 
     if (ok == true) {
-      await svc.deleteActivity(id);
+      await ctrl.deleteActivity(id);
       if (context.mounted) {
         _successPopup(context, "The Activity\nSuccessfully\nDeleted!!");
       }

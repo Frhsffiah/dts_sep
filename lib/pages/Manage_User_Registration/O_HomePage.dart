@@ -21,10 +21,15 @@ class _OHomePageState extends State<OHomePage> {
   final images = ['assets/images/officer1.jpeg', 'assets/images/officer2.jpg'];
 
   void _onNavTap(int i) {
+    setState(() => _index = i);
+
     if (i == 0) {
+      // ✅ PASS officerId properly
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const OfficerRegPreacherPage()),
+        MaterialPageRoute(
+          builder: (_) => OfficerRegPreacherPage(officerId: widget.officerId),
+        ),
       );
     } else if (i == 2) {
       Navigator.pushReplacement(
@@ -33,9 +38,8 @@ class _OHomePageState extends State<OHomePage> {
           builder: (_) => OfficerProfilePage(userId: widget.officerId),
         ),
       );
-    } else {
-      setState(() => _index = 1);
     }
+    // i == 1 → stay on home
   }
 
   @override
@@ -61,7 +65,7 @@ class _OHomePageState extends State<OHomePage> {
     );
   }
 
-  // 🔁 SAME carousel logic as Admin
+  // 🔁 Carousel (unchanged)
   Widget _imageCarousel() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

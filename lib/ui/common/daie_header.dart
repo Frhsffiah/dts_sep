@@ -1,7 +1,7 @@
 // lib/ui/common/daie_header.dart
 import 'package:flutter/material.dart';
 
-// ✅ FIXED: correct new LoginPage path
+// Login page
 import '../../pages/Manage_User_Registration/LoginPage.dart';
 
 class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
@@ -16,7 +16,14 @@ class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
 
       title: Row(
         children: [
-          // 🕌 MUIP LOGO (LEFT)
+          // ⬅️ BACK BUTTON (ONLY WHEN POSSIBLE)
+          if (Navigator.canPop(context))
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+
+          // 🕌 MUIP LOGO
           Image.asset('assets/images/muip.png', height: 26),
 
           const SizedBox(width: 12),
@@ -35,7 +42,7 @@ class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
 
-          // 🔴 LOGOUT BUTTON (RIGHT)
+          // 🔴 LOGOUT BUTTON
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),
             onPressed: () {
@@ -53,7 +60,9 @@ class DaieHeader extends StatelessWidget implements PreferredSizeWidget {
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          MaterialPageRoute(
+                            builder: (_) => const LoginPage(),
+                          ),
                           (route) => false,
                         );
                       },

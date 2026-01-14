@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PreacherNav extends StatelessWidget {
-  final int currentIndex; // 0=activity,1=home,2=profile (you can adjust)
+  final int currentIndex; // 0=activity,1=home,2=profile
   final void Function(int) onTap;
   const PreacherNav({
     super.key,
