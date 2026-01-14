@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../../provider/LoginController.dart';
 import '../../ui/common/daie_header.dart';
@@ -7,6 +6,7 @@ import '../../ui/common/admin_nav.dart';
 import 'A_PendingListPage.dart';
 import '../Manage_User_Profile/A_ViewPreacherListPage.dart';
 import '../Manage_User_Profile/A_ViewOfficerListPage.dart';
+
 
 class AHomePage extends StatefulWidget {
   final String adminId;
@@ -52,7 +52,7 @@ class _AHomePageState extends State<AHomePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const AViewPreacherListPage(),
+                  builder: (_) => AViewPreacherListPage(),
                 ),
               );
             },
@@ -64,7 +64,7 @@ class _AHomePageState extends State<AHomePage> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AViewOfficerListPage()),
+                MaterialPageRoute(builder: (_) => AViewOfficerListPage()),
               );
             },
           ),

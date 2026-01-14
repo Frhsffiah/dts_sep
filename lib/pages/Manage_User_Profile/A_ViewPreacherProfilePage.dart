@@ -5,8 +5,8 @@ import '../../provider/UserProfileController.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/dt_theme.dart';
 import '../../ui/common/admin_nav.dart';
-import '../Manage_User_Registration/A_HomePage.dart';
 import 'A_ViewPreacherListPage.dart';
+import '../Manage_User_Registration/A_HomePage.dart';
 
 class AViewPreacherProfilePage extends StatelessWidget {
   final String preacherId;
@@ -52,6 +52,7 @@ class AViewPreacherProfilePage extends StatelessWidget {
           );
         },
       ),
+
       bottomNavigationBar: AdminNav(
         currentIndex: 2,
         onTap: (i) {
@@ -65,7 +66,9 @@ class AViewPreacherProfilePage extends StatelessWidget {
           } else if (i == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const AViewPreacherListPage()),
+              MaterialPageRoute(
+                builder: (_) => const AViewPreacherListPage(),
+              ),
             );
           }
         },

@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 class PreacherNav extends StatelessWidget {
   final int currentIndex; // 0=activity,1=home,2=profile (you can adjust)
   final void Function(int) onTap;
-  const PreacherNav({super.key, required this.currentIndex, required this.onTap});
+  const PreacherNav({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +32,11 @@ class PreacherNav extends StatelessWidget {
     final selected = index == currentIndex;
     return IconButton(
       onPressed: () => onTap(index),
-      icon: Icon(icon, size: 30, color: selected ? Colors.black : Colors.black54),
+      icon: Icon(
+        icon,
+        size: 30,
+        color: selected ? Colors.black : Colors.black54,
+      ),
     );
   }
 }
