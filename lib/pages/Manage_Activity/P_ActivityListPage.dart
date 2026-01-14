@@ -4,11 +4,14 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/ActivityController.dart';
+import '../../provider/PaymentController.dart';
+import '../../services/location_service.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/preacher_nav.dart';
 
 import '../Manage_User_Registration/P_HomePage.dart';
 import '../Manage_User_Profile/P_ProfilePage.dart';
+import '../Manage_Payment/P_PaymentReceiptPage.dart';
 
 class P_ActivityList extends StatefulWidget {
   final String preacherId;
@@ -21,6 +24,7 @@ class P_ActivityList extends StatefulWidget {
 class _P_ActivityListState extends State<P_ActivityList>
     with SingleTickerProviderStateMixin {
   late final TabController _tab;
+  final LocationService _locationService = LocationService();
 
   @override
   void initState() {
@@ -59,9 +63,6 @@ class _P_ActivityListState extends State<P_ActivityList>
             child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: ctrl.watchPreacherActivities(widget.preacherId),
               builder: (context, snap) {
-                if (snap.hasError) {
-                  return Center(child: Text("Error: ${snap.error}"));
-                }
                 if (!snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -81,10 +82,8 @@ class _P_ActivityListState extends State<P_ActivityList>
         ],
       ),
       bottomNavigationBar: PreacherNav(
-        currentIndex: 0, // 👥 selected
+        currentIndex: 0,
         onTap: (index) {
-          if (index == 0) return;
-
           if (index == 1) {
             Navigator.pushReplacement(
               context,
@@ -129,7 +128,9 @@ class _P_ActivityListState extends State<P_ActivityList>
       itemCount: filtered.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (_, i) {
-        final data = filtered[i].data();
+        final doc = filtered[i];
+        final data = doc.data();
+        final activityId = doc.id;
 
         final title = (data['title'] ?? '').toString();
         final place = (data['place'] ?? '').toString();
@@ -149,20 +150,84 @@ class _P_ActivityListState extends State<P_ActivityList>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               _row(Icons.location_on_outlined, place),
-              const SizedBox(height: 4),
               _row(Icons.calendar_month_outlined, dateStr),
-              const SizedBox(height: 4),
               _row(Icons.access_time_rounded, timeStr),
+
+              /// ✅ COMPLETED ACTIVITY FEATURES
               if (!upcoming) ...[
+                const SizedBox(height: 10),
+
+                /// 🔵 CHECK GPS LOCATION
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.gps_fixed),
+                  label: const Text("Check Location"),
+                  onPressed: () async {
+                    final position =
+                        await _locationService.getCurrentLocation();
+
+                    if (position == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Location access denied")),
+                      );
+                      return;
+                    }
+
+                    await FirebaseFirestore.instance
+                        .collection('activities')
+                        .doc(activityId)
+                        .update({
+                      'gpsLat': position.latitude,
+                      'gpsLng': position.longitude,
+                      'gpsCheckedAt': Timestamp.now(),
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Location recorded")),
+                    );
+                  },
+                ),
+
                 const SizedBox(height: 6),
-                Text(
-                  "Payment Receipt",
-                  style: TextStyle(
-                    color: Colors.black.withOpacity(.35),
-                    decoration: TextDecoration.underline,
-                  ),
+
+                /// 💰 PAYMENT RECEIPT
+                Consumer<PaymentController>(
+                  builder: (context, paymentCtrl, _) {
+                    return FutureBuilder(
+                      future:
+                          paymentCtrl.getPaymentByActivity(activityId),
+                      builder: (context, snapPay) {
+                        if (!snapPay.hasData) {
+                          return const Text(
+                            "Payment not available",
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+
+                        final payment = snapPay.data!;
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    P_PaymentReceiptPage(payment: payment),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "View Payment Receipt",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ],
@@ -173,12 +238,15 @@ class _P_ActivityListState extends State<P_ActivityList>
   }
 
   Widget _row(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 6),
-        Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 6),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
+        ],
+      ),
     );
   }
 }

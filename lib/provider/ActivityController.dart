@@ -68,4 +68,24 @@ class ActivityController extends ChangeNotifier {
   Future<void> deleteActivity(String id) async {
     await _col.doc(id).delete();
   }
+
+  Future<void> checkInLocation({
+  required String activityId,
+  required double latitude,
+  required double longitude,
+}) async {
+  await FirebaseFirestore.instance
+      .collection('activities')
+      .doc(activityId)
+      .update({
+    'gps': {
+      'latitude': latitude,
+      'longitude': longitude,
+      'checkedAt': Timestamp.now(),
+    }
+  });
+}
+
+
+  
 }
