@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "257979308698",
+    "project_id": "dts-sep-flutter",
+    "storage_bucket": "dts-sep-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257979308698:android:361c4eeb00fbfd4bbddd23",
+        "android_client_info": {
+          "package_name": "com.example.dts_sep"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtc6T5Wjnu2lzyjF8cCBKMNs78EWiUvoU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
