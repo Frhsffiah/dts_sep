@@ -7,7 +7,7 @@ import '../../ui/common/daie_header.dart';
 import 'O_EditKpiPage.dart';
 
 class O_KpiListPage extends StatelessWidget {
-  const O_KpiListPage({super.key});
+  const O_KpiListPage({super.key, required String preacherId});
 
   @override
   Widget build(BuildContext context) {

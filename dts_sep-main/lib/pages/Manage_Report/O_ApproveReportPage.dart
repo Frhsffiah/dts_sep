@@ -1,26 +1,3 @@
-// O_ApproveReportPage.dart
-//
-// Officer page to APPROVE / REJECT report submissions.
-// - Reads from Firestore collection: "reports"
-// - Shows ONLY pending reports by default (status == "Pending")
-// - Tap a report -> open details (same UI style as your View Report page)
-// - Approve / Reject buttons update Firestore fields
-//
-// Required fields in each report doc (recommended):
-//   title (String)
-//   date or year (String)
-//   description (String)
-//   participants (num)
-//   evidence (String)
-//   status (String) => "Pending" | "Approved" | "Rejected"
-// Optional fields:
-//   submittedBy (String), preacherId/preacherName (String), createdAt (Timestamp)
-//
-// Make sure you have "reports" docs using these fields OR adjust the field names in _readStr.
-//
-// Usage:
-// Navigator.push(context, MaterialPageRoute(builder: (_) => O_ApproveReportPage(officerId: officerId)));
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 

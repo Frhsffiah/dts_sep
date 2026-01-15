@@ -11,7 +11,7 @@ import 'O_EditActivityPage.dart';
 
 class O_ActivityList extends StatelessWidget {
   final String officerId;
-  const O_ActivityList({super.key, required this.officerId});
+  const O_ActivityList({super.key, required this.officerId, required String preacherId});
 
   @override
   Widget build(BuildContext context) {

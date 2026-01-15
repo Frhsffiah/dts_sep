@@ -1,40 +1,39 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
 import 'package:provider/provider.dart';
+
 import '../../provider/KpiController.dart';
 import '../../services/user_service.dart';
 import '../../ui/common/daie_header.dart';
 
 class O_AddKpiPage extends StatefulWidget {
-    final String officerID;
-    const O_AddKpiPage({super.key, required this.officerId});
+  final String officerId; // ✅ fixed name
+  const O_AddKpiPage({super.key, required this.officerId});
 
-    @override
-    State<O_AddKpiPage> createState() => _O_AddKpiState();
+  @override
+  State<O_AddKpiPage> createState() => _O_AddKpiState();
 }
 
 class _O_AddKpiState extends State<O_AddKpiPage> {
+  final _title = TextEditingController();
+  final _desc = TextEditingController();
+  final _target = TextEditingController();
+  final _actual = TextEditingController();
 
-    final _title = TextEditingController();
-    final _place = TextEditingController();
-    final _desc = TextEditingController();
-    DateTime? _picked;
+  String? _year;
+  String? _preacherId;
+  String? _preacherName;
+  String _status = "Pending";
 
-    String _search = "";
-    String? _preacherId;
-    String? _preacherName;
+  @override
+  void dispose() {
+    _title.dispose();
+    _desc.dispose();
+    _target.dispose();
+    _actual.dispose();
+    super.dispose();
+  }
 
-    @override
-    void dispose() {
-        _title.dispose();
-        _place.dispose();
-        _desc.dispose();
-        super.dispose();
-    }
-    
-    @override
+  @override
   Widget build(BuildContext context) {
     final users = UserService();
 
@@ -83,7 +82,10 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
                   stream: users.watchPreachers(),
                   builder: (context, snap) {
                     if (!snap.hasData) {
-                      return const CircularProgressIndicator();
+                      return const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
                     }
 
                     final docs = (snap.data as dynamic).docs;
@@ -94,13 +96,14 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
                       items: docs.map<String>((d) => d.id).toList(),
                       labelBuilder: (id) {
                         final doc = docs.firstWhere((e) => e.id == id);
-                        return doc['fullName'];
+                        return (doc['fullName'] ?? '-').toString();
                       },
                       onChanged: (v) {
+                        if (v == null) return;
                         final doc = docs.firstWhere((e) => e.id == v);
                         setState(() {
                           _preacherId = v;
-                          _preacherName = doc['fullName'];
+                          _preacherName = (doc['fullName'] ?? '').toString();
                         });
                       },
                     );
@@ -133,11 +136,7 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
                 const SizedBox(height: 12),
 
                 _label("Status KPI"),
-                _input(
-                  TextEditingController(text: _status),
-                  "",
-                  enabled: false,
-                ),
+                _readOnlyBox(_status),
 
                 const SizedBox(height: 18),
 
@@ -161,24 +160,15 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
   Widget _label(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.w700),
-      ),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
     );
   }
 
-  Widget _input(
-    TextEditingController c,
-    String hint, {
-    int maxLines = 1,
-    bool enabled = true,
-  }) {
+  Widget _input(TextEditingController c, String hint, {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: c,
-        enabled: enabled,
         maxLines: maxLines,
         decoration: InputDecoration(
           hintText: hint,
@@ -188,6 +178,24 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _readOnlyBox(String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(.7),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -221,7 +229,7 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
               ),
             )
             .toList(),
-        onChanged: onChanged,
+        onChanged: (v) => onChanged(v),
       ),
     );
   }
@@ -238,9 +246,7 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
         controller: c,
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-        ),
+        decoration: const InputDecoration(border: InputBorder.none),
         onChanged: (_) => _updateStatus(),
       ),
     );
@@ -253,9 +259,7 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       child: Text(text, style: const TextStyle(fontWeight: FontWeight.w800)),
     );
@@ -273,22 +277,31 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
   }
 
   Future<void> _submit() async {
-    if (_title.text.isEmpty ||
+    if (_title.text.trim().isEmpty ||
         _year == null ||
         _preacherId == null ||
-        _target.text.isEmpty) {
+        _preacherName == null ||
+        _target.text.trim().isEmpty) {
       _toast("Please complete all required fields");
+      return;
+    }
+
+    final target = int.tryParse(_target.text.trim());
+    final actual = int.tryParse(_actual.text.trim()) ?? 0;
+
+    if (target == null || target <= 0) {
+      _toast("Target KPI must be a valid number (> 0)");
       return;
     }
 
     final ctrl = context.read<KpiController>();
     await ctrl.addKpi(
       officerId: widget.officerId,
-      title: _title.text,
-      description: _desc.text,
+      title: _title.text.trim(),
+      description: _desc.text.trim(),
       year: _year!,
-      target: int.parse(_target.text),
-      actual: int.tryParse(_actual.text) ?? 0,
+      target: target,
+      actual: actual,
       status: _status,
       preacherId: _preacherId!,
       preacherName: _preacherName!,
@@ -299,8 +312,6 @@ class _O_AddKpiState extends State<O_AddKpiPage> {
   }
 
   void _toast(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
