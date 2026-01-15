@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../provider/ActivityController.dart';
 import '../../provider/PaymentController.dart';
-import '../../services/location_service.dart';
 import '../../ui/common/daie_header.dart';
 import '../../ui/common/preacher_nav.dart';
 
@@ -24,7 +24,6 @@ class P_ActivityList extends StatefulWidget {
 class _P_ActivityListState extends State<P_ActivityList>
     with SingleTickerProviderStateMixin {
   late final TabController _tab;
-  final LocationService _locationService = LocationService();
 
   @override
   void initState() {
@@ -50,9 +49,6 @@ class _P_ActivityListState extends State<P_ActivityList>
             color: const Color(0xFFCFE7F3),
             child: TabBar(
               controller: _tab,
-              indicatorColor: Colors.black,
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.black54,
               tabs: const [
                 Tab(text: "Upcoming"),
                 Tab(text: "Completed"),
@@ -132,8 +128,8 @@ class _P_ActivityListState extends State<P_ActivityList>
         final data = doc.data();
         final activityId = doc.id;
 
-        final title = (data['title'] ?? '').toString();
-        final place = (data['place'] ?? '').toString();
+        final title = data['title'] ?? '';
+        final place = data['place'] ?? '';
 
         final dt = (data['dateTime'] as Timestamp).toDate();
         final dateStr = DateFormat('d/M/yyyy').format(dt);
@@ -144,7 +140,6 @@ class _P_ActivityListState extends State<P_ActivityList>
           decoration: BoxDecoration(
             color: const Color(0xFFCFE7F3),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.black.withOpacity(.15)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,36 +150,34 @@ class _P_ActivityListState extends State<P_ActivityList>
               _row(Icons.calendar_month_outlined, dateStr),
               _row(Icons.access_time_rounded, timeStr),
 
-              /// ✅ COMPLETED ACTIVITY FEATURES
+              /// ✅ COMPLETED ONLY
               if (!upcoming) ...[
                 const SizedBox(height: 10),
 
-                /// 🔵 CHECK GPS LOCATION
+                /// 📍 VIEW LOCATION (OPEN MAP)
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.gps_fixed),
+                  icon: const Icon(Icons.map),
                   label: const Text("Check Location"),
                   onPressed: () async {
-                    final position =
-                        await _locationService.getCurrentLocation();
+                    final lat = data['gpsLat'];
+                    final lng = data['gpsLng'];
 
-                    if (position == null) {
+                    if (lat == null || lng == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Location access denied")),
+                        const SnackBar(
+                          content: Text("Location not recorded yet"),
+                        ),
                       );
                       return;
                     }
 
-                    await FirebaseFirestore.instance
-                        .collection('activities')
-                        .doc(activityId)
-                        .update({
-                      'gpsLat': position.latitude,
-                      'gpsLng': position.longitude,
-                      'gpsCheckedAt': Timestamp.now(),
-                    });
+                    final uri = Uri.parse(
+                      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+                    );
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Location recorded")),
+                    await launchUrl(
+                      uri,
+                      mode: LaunchMode.externalApplication,
                     );
                   },
                 ),
@@ -244,7 +237,7 @@ class _P_ActivityListState extends State<P_ActivityList>
         children: [
           Icon(icon, size: 18),
           const SizedBox(width: 6),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
+          Expanded(child: Text(text)),
         ],
       ),
     );
